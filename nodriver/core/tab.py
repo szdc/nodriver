@@ -213,20 +213,22 @@ class Tab(Connection):
 
         if getattr(self, "_prep_headless_done", None):
             return
-        resp = await self._send_oneshot(
+        resp = await super().send(
             cdp.runtime.evaluate(
                 expression="navigator.userAgent",
-            )
+            ),
+            _is_update=True
         )
         if not resp:
             return
         response, error = resp
         if response and response.value:
             ua = response.value
-            await self._send_oneshot(
+            await super().send(
                 cdp.network.set_user_agent_override(
                     user_agent=ua.replace("Headless", ""),
-                )
+                ),
+                _is_update=True
             )
         setattr(self, "_prep_headless_done", True)
 
@@ -234,8 +236,8 @@ class Tab(Connection):
         if getattr(self, "_prep_expert_done", None):
             return
         if self.browser:
-            await self._send_oneshot(cdp.page.enable())
-            await self._send_oneshot(
+            await super().send(cdp.page.enable(), _is_update=True)
+            await super().send(
                 cdp.page.add_script_to_evaluate_on_new_document(
                     """
                     console.log("hooking attachShadow");
@@ -244,7 +246,8 @@ class Tab(Connection):
                         console.log('calling hooked attachShadow')
                         return this._attachShadow( { mode: "open" } );
                     };"""
-                )
+                ),
+                _is_update=True
             )
 
         setattr(self, "_prep_expert_done", True)
