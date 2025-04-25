@@ -411,7 +411,7 @@ class Browser:
         self._http = HTTPApi((self.config.host, self.config.port))
         util.get_registered_instances().add(self)
         await asyncio.sleep(0.25)
-        for _ in range(5):
+        for _ in range(50):
             try:
                 self.info = ContraDict(await self._http.get("version"), silent=True)
             except (Exception,):
